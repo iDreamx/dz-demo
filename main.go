@@ -1,5 +1,31 @@
 package main
 
-func main() {
+import (
+	"fmt"
+	"net/http"
+	"sync"
+	"time"
+)
 
+func main() {
+	t := time.Now()
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			getHttpCode()
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	fmt.Println("All time:", time.Since(t))
+}
+
+func getHttpCode() {
+	resp, err := http.Get("https://google.com")
+	if err != nil {
+		fmt.Printf("Error %s", err.Error())
+		return
+	}
+	fmt.Println("Code: ", resp.StatusCode)
 }
