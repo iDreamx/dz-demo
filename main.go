@@ -2,34 +2,40 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"sync"
 )
 
 func main() {
+	arr := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+	numGoroutines := 3
 	code := make(chan int)
 	var wg sync.WaitGroup
-	for i := 0; i < 10; i++ {
+	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
+		ot := 0 + (i * 4)
+		do := 4 + (i * 4)
 		go func() {
-			getHttpCode(code)
+			getSum(code, arr[ot:do])
 			wg.Done()
 		}()
 	}
+
 	go func() {
 		wg.Wait()
 		close(code)
 	}()
+
+	sum := 0
 	for res := range code {
-		fmt.Printf("Code: %d\n", res)
+		sum += res
 	}
+	fmt.Println("Sum:", sum)
 }
 
-func getHttpCode(codeCh chan int) {
-	resp, err := http.Get("https://google.com")
-	if err != nil {
-		fmt.Printf("Error %s", err.Error())
-		return
+func getSum(codeCh chan int, arr []int) {
+	sum := 0
+	for _, v := range arr {
+		sum += v
 	}
-	codeCh <- resp.StatusCode
+	codeCh <- sum
 }
