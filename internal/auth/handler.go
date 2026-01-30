@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"encoding/json"
 	"fmt"
 	"go/adv-demo/configs"
+	"go/adv-demo/pkg/req"
 	"go/adv-demo/pkg/res"
 	"net/http"
 )
@@ -24,14 +24,13 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 }
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		//Read body
-		var payload LoginRequst
-		err := json.NewDecoder(req.Body).Decode(&payload)
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Read body
+		body, err := req.HandleBody[LoginRequst](&w, r)
 		if err != nil {
-			res.Json(w, err.Error(), 402)
+			return
 		}
-		fmt.Println(payload)
+		fmt.Println(body)
 		data := LoginResponse{
 			Token: "123",
 		}
@@ -40,7 +39,17 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 }
 
 func (handler *AuthHandler) Register() http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("Register")
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := req.HandleBody[RegisterRequest](&w, r)
+		if err != nil {
+			res.Json(w, err.Error(), 400)
+			return
+		}
+		fmt.Println(body)
+		// data := RegisterResponse{
+		// 	Token: "456",
+		// }
+		// res.Json(w, data, 200)
+		// fmt.Println("Register")
 	}
 }
